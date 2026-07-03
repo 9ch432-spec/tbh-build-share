@@ -1,11 +1,13 @@
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { getLocale } from 'next-intl/server';
+import { createClient } from '@supabase/supabase-js';
 import Navbar from '@/components/Navbar';
+
+export const dynamic = 'force-dynamic';
 
 const CLASSES = ['Knight', 'Sorcerer', 'Ranger', 'Priest', 'Hunter', 'Slayer'];
 
-// クラスアイコン
 const CLASS_ICONS: Record<string, string> = {
   Knight: '🛡️',
   Sorcerer: '🔮',
@@ -15,8 +17,19 @@ const CLASS_ICONS: Record<string, string> = {
   Slayer: '⚔️',
 };
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+interface BuildSummary {
+  id: string;
+  title: string | null;
+  classes: string[];
+  note: string | null;
+  createdAt: string;
+}
+
+function extractClasses(buildData: unknown): string[] {
+  if (!buildData || typeof buildData !== 'object') return [];
+  const data = buildData as { heroes?: { class?: string }[] };
+  return (data.heroes || []).map((h) => h?.class || 'Unknown').filter(Boolean);
+}
 
 export default async function BuildsPage({
   searchParams,
@@ -27,8 +40,40 @@ export default async function BuildsPage({
   const locale = await getLocale();
   const page = Math.max(1, parseInt(pageStr ?? '1'));
 
-  // Supabaseからビルド一覧を取得（未設定時はサンプルデータ）
-  const builds = await fetchBuilds({ classFilter, page });
+  let builds: BuildSummary[] = [];
+
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (supabaseUrl && supabaseKey && supabaseUrl !== 'YOUR_SUPABASE_URL') {
+    try {
+      const supabase = createClient(supabaseUrl, supabaseKey);
+      const { data, error } = await supabase
+        .from('builds')
+        .select('id, title, build_data, note, created_at')
+        .eq('is_public', true)
+        .order('created_at', { ascending: false })
+        .range((page - 1) * 20, page * 20 - 1);
+
+      if (error) {
+        console.error('[BuildsPage] error:', JSON.stringify(error));
+      } else if (data) {
+        builds = data.map((row) => ({
+          id: row.id as string,
+          title: row.title as string | null,
+          classes: extractClasses(row.build_data),
+          note: row.note as string | null,
+          createdAt: row.created_at as string,
+        }));
+        if (classFilter) {
+          builds = builds.filter((b) => b.classes.includes(classFilter));
+        }
+        console.log('[BuildsPage] fetched:', builds.length);
+      }
+    } catch (e) {
+      console.error('[BuildsPage] exception:', e);
+    }
+  }
 
   return (
     <>
@@ -39,8 +84,6 @@ export default async function BuildsPage({
     </>
   );
 }
-
-// ---- サブコンポーネント ----
 
 function BuildsList({
   builds,
@@ -65,9 +108,7 @@ function BuildsList({
         <Link
           href={`/${locale}/builds`}
           className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
-            !classFilter
-              ? 'bg-amber-500 text-gray-900'
-              : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+            !classFilter ? 'bg-amber-500 text-gray-900' : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
           }`}
         >
           {t('all')}
@@ -77,9 +118,7 @@ function BuildsList({
             key={c}
             href={`/${locale}/builds?class=${c}`}
             className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
-              classFilter === c
-                ? 'bg-amber-500 text-gray-900'
-                : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+              classFilter === c ? 'bg-amber-500 text-gray-900' : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
             }`}
           >
             {CLASS_ICONS[c]} {tClasses(c as keyof typeof CLASS_ICONS)}
@@ -138,88 +177,15 @@ function BuildCard({ build, locale }: { build: BuildSummary; locale: string }) {
       </h2>
       <div className="flex flex-wrap gap-1.5 mb-3">
         {build.classes.map((c, i) => (
-          <span
-            key={i}
-            className="text-xs bg-gray-800 text-amber-300 px-2 py-0.5 rounded-full"
-          >
+          <span key={i} className="text-xs bg-gray-800 text-amber-300 px-2 py-0.5 rounded-full">
             {CLASS_ICONS[c] || '👤'} {tClasses(c as keyof typeof CLASS_ICONS) || c}
           </span>
         ))}
       </div>
-      {build.note && (
-        <p className="text-xs text-gray-500 line-clamp-2">{build.note}</p>
-      )}
+      {build.note && <p className="text-xs text-gray-500 line-clamp-2">{build.note}</p>}
       <p className="text-xs text-gray-600 mt-3">
         {new Date(build.createdAt).toLocaleDateString(locale)}
       </p>
     </Link>
   );
-}
-
-// ---- データ取得 ----
-
-interface BuildSummary {
-  id: string;
-  title: string | null;
-  classes: string[];
-  note: string | null;
-  createdAt: string;
-}
-
-async function fetchBuilds({
-  classFilter,
-  page,
-}: {
-  classFilter?: string;
-  page: number;
-}): Promise<BuildSummary[]> {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-  if (!supabaseUrl || !supabaseKey || supabaseUrl === 'YOUR_SUPABASE_URL') {
-    // デモデータ
-    return [];
-  }
-
-  try {
-    const { createClient } = await import('@supabase/supabase-js');
-    const supabase = createClient(supabaseUrl, supabaseKey);
-
-    const { data, error } = await supabase
-      .from('builds')
-      .select('id, title, build_data, note, created_at')
-      .eq('is_public', true)
-      .order('created_at', { ascending: false })
-      .range((page - 1) * 20, page * 20 - 1);
-
-    if (error) {
-      console.error('fetchBuilds Supabase error:', JSON.stringify(error));
-      return [];
-    }
-    if (!data) return [];
-
-    let results = data.map((row) => ({
-      id: row.id as string,
-      title: row.title as string | null,
-      classes: extractClasses(row.build_data),
-      note: row.note as string | null,
-      createdAt: row.created_at as string,
-    }));
-
-    // クラスフィルター（クライアント側でフィルタリング）
-    if (classFilter) {
-      results = results.filter((b) => b.classes.includes(classFilter));
-    }
-
-    return results;
-  } catch (e) {
-    console.error('fetchBuilds error:', e);
-    return [];
-  }
-}
-
-function extractClasses(buildData: unknown): string[] {
-  if (!buildData || typeof buildData !== 'object') return [];
-  const data = buildData as { heroes?: { class?: string }[] };
-  return (data.heroes || []).map((h) => h?.class || 'Unknown').filter(Boolean);
 }

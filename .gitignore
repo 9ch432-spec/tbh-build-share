@@ -39,3 +39,11 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# test files
+test*.mjs
+decrypted.json
+save.es3
+GameAssembly.dll
+global-metadata.dat
+strings_output.txt

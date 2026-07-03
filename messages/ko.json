@@ -1,0 +1,92 @@
+{
+  "nav": {
+    "home": "홈",
+    "builds": "빌드 목록",
+    "upload": "빌드 등록",
+    "login": "로그인",
+    "logout": "로그아웃",
+    "register": "회원가입"
+  },
+  "home": {
+    "title": "TBH 빌드 쉐어",
+    "subtitle": "Task Bar Hero 빌드를 공유하세요",
+    "cta": "빌드 등록하기",
+    "browseCta": "빌드 보기"
+  },
+  "upload": {
+    "title": "빌드 업로드",
+    "description": "Steam 클라우드에서 다운로드한 ES3 파일을 업로드하세요",
+    "dropzone": "ES3 파일을 여기에 드롭하거나 클릭하여 선택",
+    "fileHint": ".es3 파일만 지원 (최대 10MB)",
+    "submit": "업로드 및 공유",
+    "processing": "처리 중...",
+    "success": "빌드가 공유되었습니다!",
+    "error": {
+      "invalidFile": "ES3 파일만 업로드 가능합니다",
+      "tooLarge": "파일 크기가 10MB를 초과합니다",
+      "parseFailed": "파일 파싱에 실패했습니다",
+      "encrypted": "지원하지 않는 암호화 형식입니다"
+    },
+    "buildTitle": "빌드 이름 (선택)",
+    "buildNote": "메모 (선택)",
+    "visibility": {
+      "label": "공개 설정",
+      "public": "공개",
+      "private": "비공개"
+    }
+  },
+  "build": {
+    "party": "파티 구성",
+    "hero": "영웅",
+    "class": "클래스",
+    "stats": "스탯",
+    "skills": "스킬",
+    "gear": "장비",
+    "runes": "룬",
+    "shareLink": "공유 링크 복사",
+    "copied": "복사됨!",
+    "notFound": "빌드를 찾을 수 없습니다",
+    "createdAt": "등록일",
+    "by": "작성자"
+  },
+  "builds": {
+    "title": "빌드 목록",
+    "filter": "클래스로 필터",
+    "all": "전체",
+    "sortBy": "정렬 기준",
+    "newest": "최신순",
+    "page": "{current} / {total} 페이지",
+    "empty": "아직 빌드가 없습니다"
+  },
+  "auth": {
+    "email": "이메일",
+    "password": "비밀번호",
+    "loginTitle": "로그인",
+    "registerTitle": "회원가입",
+    "loginSubmit": "로그인",
+    "registerSubmit": "가입하기",
+    "noAccount": "계정이 없으신가요?",
+    "hasAccount": "이미 계정이 있으신가요?",
+    "error": {
+      "invalid": "이메일 또는 비밀번호가 올바르지 않습니다",
+      "emailTaken": "이미 사용 중인 이메일입니다"
+    }
+  },
+  "common": {
+    "loading": "로딩 중...",
+    "error": "오류가 발생했습니다",
+    "delete": "삭제",
+    "confirm": "확인",
+    "cancel": "취소",
+    "save": "저장",
+    "back": "뒤로"
+  },
+  "classes": {
+    "Knight": "나이트",
+    "Sorcerer": "소서러",
+    "Ranger": "레인저",
+    "Priest": "프리스트",
+    "Hunter": "헌터",
+    "Slayer": "슬레이어"
+  }
+}

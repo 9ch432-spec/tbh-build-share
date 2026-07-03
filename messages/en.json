@@ -1,0 +1,92 @@
+{
+  "nav": {
+    "home": "Home",
+    "builds": "Builds",
+    "upload": "Post Build",
+    "login": "Login",
+    "logout": "Logout",
+    "register": "Register"
+  },
+  "home": {
+    "title": "TBH Build Share",
+    "subtitle": "Share your Task Bar Hero builds",
+    "cta": "Post a Build",
+    "browseCta": "Browse Builds"
+  },
+  "upload": {
+    "title": "Upload Build",
+    "description": "Upload your ES3 save file downloaded from Steam Cloud",
+    "dropzone": "Drop your ES3 file here, or click to select",
+    "fileHint": ".es3 files only (max 10MB)",
+    "submit": "Upload & Share",
+    "processing": "Processing...",
+    "success": "Build shared successfully!",
+    "error": {
+      "invalidFile": "Only ES3 files are supported",
+      "tooLarge": "File size exceeds 10MB",
+      "parseFailed": "Failed to parse file",
+      "encrypted": "This file is encrypted in an unsupported format"
+    },
+    "buildTitle": "Build Name (optional)",
+    "buildNote": "Notes (optional)",
+    "visibility": {
+      "label": "Visibility",
+      "public": "Public",
+      "private": "Private"
+    }
+  },
+  "build": {
+    "party": "Party",
+    "hero": "Hero",
+    "class": "Class",
+    "stats": "Stats",
+    "skills": "Skills",
+    "gear": "Gear",
+    "runes": "Runes",
+    "shareLink": "Copy Share Link",
+    "copied": "Copied!",
+    "notFound": "Build not found",
+    "createdAt": "Posted",
+    "by": "by"
+  },
+  "builds": {
+    "title": "Builds",
+    "filter": "Filter by Class",
+    "all": "All",
+    "sortBy": "Sort By",
+    "newest": "Newest",
+    "page": "Page {current} of {total}",
+    "empty": "No builds yet"
+  },
+  "auth": {
+    "email": "Email",
+    "password": "Password",
+    "loginTitle": "Login",
+    "registerTitle": "Register",
+    "loginSubmit": "Login",
+    "registerSubmit": "Register",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?",
+    "error": {
+      "invalid": "Invalid email or password",
+      "emailTaken": "This email is already taken"
+    }
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "delete": "Delete",
+    "confirm": "Confirm",
+    "cancel": "Cancel",
+    "save": "Save",
+    "back": "Back"
+  },
+  "classes": {
+    "Knight": "Knight",
+    "Sorcerer": "Sorcerer",
+    "Ranger": "Ranger",
+    "Priest": "Priest",
+    "Hunter": "Hunter",
+    "Slayer": "Slayer"
+  }
+}

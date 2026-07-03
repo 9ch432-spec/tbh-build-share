@@ -15,6 +15,9 @@ const CLASS_ICONS: Record<string, string> = {
   Slayer: '⚔️',
 };
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function BuildsPage({
   searchParams,
 }: {

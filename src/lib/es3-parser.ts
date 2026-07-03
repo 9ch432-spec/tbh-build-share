@@ -40,7 +40,8 @@ export interface HeroData {
   abilityPoint: number;
   allocatedAbilityPoint: number;
   equippedSkillKeys: number[];
-  equippedItemIds: number[];
+  equippedItemIds: number[];      // UniqueId (64bit)
+  equippedItemKeys: number[];     // ItemKey (種類キー)
   unlockedAttributeGroupKeys: number[];
   isUnlocked: boolean;
 }
@@ -114,7 +115,8 @@ function parsePlayerSaveData(root: Record<string, unknown>): Record<string, unkn
  */
 function buildHeroData(
   heroSave: Record<string, unknown>,
-  index: number
+  index: number,
+  equippedItemKeys: number[] = []
 ): HeroData {
   const heroKey = Number(heroSave.heroKey ?? 0);
   return {
@@ -127,6 +129,7 @@ function buildHeroData(
     allocatedAbilityPoint: Number(heroSave.AllocatedHeroAbilityPoint ?? 0),
     equippedSkillKeys: (heroSave.equippedSKillKey as number[] | undefined) ?? [],
     equippedItemIds: (heroSave.equippedItemIds as number[] | undefined) ?? [],
+    equippedItemKeys,
     unlockedAttributeGroupKeys: (heroSave.unlockedAttributeGroupKeys as number[] | undefined) ?? [],
     isUnlocked: Boolean(heroSave.IsUnLock ?? false),
   };
@@ -139,11 +142,27 @@ function extractBuildFromPlayerData(playerData: Record<string, unknown>): Parsed
   const common = (playerData.commonSaveData ?? {}) as Record<string, unknown>;
   const arrangedHeroKey = (common.arrangedHeroKey as number[] | undefined) ?? [];
   const heroSaveDatas = (playerData.heroSaveDatas as Record<string, unknown>[] | undefined) ?? [];
+  const itemSaveDatas = (playerData.itemSaveDatas as Record<string, unknown>[] | undefined) ?? [];
+
+  // UniqueId → ItemKey のマップを作成
+  const uniqueIdToItemKey = new Map<string, number>();
+  for (const item of itemSaveDatas) {
+    const uniqueId = item.UniqueId;
+    const itemKey = item.ItemKey;
+    if (uniqueId != null && itemKey != null) {
+      uniqueIdToItemKey.set(String(uniqueId), Number(itemKey));
+    }
+  }
 
   // パーティ3体のヒーローを取得
   const heroes: HeroData[] = arrangedHeroKey.slice(0, 3).map((heroKey, idx) => {
     const heroSave = heroSaveDatas.find((h) => Number(h.heroKey) === heroKey) ?? {};
-    return buildHeroData({ ...heroSave, heroKey }, idx);
+    const equippedItemIds = (heroSave.equippedItemIds as number[] | undefined) ?? [];
+    // UniqueIdからItemKeyに変換
+    const equippedItemKeys = equippedItemIds.map((uid) =>
+      uid > 0 ? (uniqueIdToItemKey.get(String(uid)) ?? 0) : 0
+    );
+    return buildHeroData({ ...heroSave, heroKey }, idx, equippedItemKeys);
   });
 
   return {

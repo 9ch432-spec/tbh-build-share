@@ -4,6 +4,8 @@ import { useTranslations, useLocale } from 'next-intl';
 import Image from 'next/image';
 import type { ParsedBuild, HeroData } from '@/lib/es3-parser';
 import { HEROES, SKILLS, getSkillName, getHeroName, SPRITE_BASE } from '@/lib/game-data';
+import { getItemMapping, getItemSpriteUrl, getItemName } from '@/lib/db/item-mapping';
+import { GRADES } from '@/lib/db/grades';
 
 function formatPlayTime(seconds: number): string {
   const h = Math.floor(seconds / 3600);
@@ -85,7 +87,6 @@ function HeroCard({ hero }: { hero: HeroData }) {
   const gradient = heroInfo?.gradient ?? 'from-gray-800/40';
   const color = heroInfo?.color ?? 'text-gray-300';
   const activeSkills = hero.equippedSkillKeys.filter((k) => k > 0);
-  const equippedItems = hero.equippedItemIds.filter((id) => id > 0);
 
   return (
     <div className={`bg-gradient-to-b ${gradient} to-gray-900 border border-gray-800 rounded-xl overflow-hidden flex flex-col`}>
@@ -185,26 +186,38 @@ function HeroCard({ hero }: { hero: HeroData }) {
       {/* 装備スロット */}
       <div className="mx-5 mb-5">
         <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
-          {t('gear')} <span className="text-gray-600 normal-case font-normal">({equippedItems.length}/{hero.equippedItemIds.length})</span>
+          {t('gear')} <span className="text-gray-600 normal-case font-normal">({hero.equippedItemKeys.filter(k => k > 0).length}/{hero.equippedItemKeys.length})</span>
         </p>
         <div className="grid grid-cols-5 gap-1">
-          {hero.equippedItemIds.map((itemId, i) => (
-            <div
-              key={i}
-              className={`aspect-square rounded-md flex items-center justify-center text-xs border transition-colors ${
-                itemId > 0
-                  ? 'bg-amber-900/30 border-amber-700/50 text-amber-400 hover:bg-amber-800/40'
-                  : 'bg-gray-800/30 border-gray-700/20 text-gray-700'
-              }`}
-              title={itemId > 0 ? `Item ID: ${itemId}` : '空'}
-            >
-              {itemId > 0 ? (
-                <span className="text-amber-500">⚙</span>
-              ) : (
-                <span className="text-gray-700">·</span>
-              )}
-            </div>
-          ))}
+          {hero.equippedItemKeys.map((itemKey, i) => {
+            if (itemKey <= 0) {
+              return (
+                <div key={i} className="aspect-square rounded-md flex items-center justify-center bg-gray-800/30 border border-gray-700/20 text-gray-700 text-xs">·</div>
+              );
+            }
+            const mapping = getItemMapping(itemKey);
+            const gradeInfo = GRADES[mapping.grade];
+            return (
+              <div
+                key={i}
+                className="aspect-square rounded-md flex items-center justify-center border border-gray-700/40 bg-gray-900/50 hover:border-amber-600/60 transition-colors relative"
+                title={`${mapping.nameJa}${gradeInfo ? ` (${gradeInfo.nameJa})` : ''}\n#${itemKey}`}
+              >
+                <Image
+                  src={`https://tbherohelper.com/sprites/${mapping.sprite}.png`}
+                  alt={mapping.nameJa}
+                  width={32}
+                  height={32}
+                  className="object-contain p-0.5"
+                  unoptimized
+                  onError={(e) => {
+                    const el = e.target as HTMLImageElement;
+                    el.style.display = 'none';
+                  }}
+                />
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>

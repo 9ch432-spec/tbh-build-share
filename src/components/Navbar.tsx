@@ -3,7 +3,8 @@
 import { useTranslations, useLocale } from 'next-intl';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { createClient } from '@/lib/supabase/client';
 import { routing } from '@/i18n/routing';
 
 const LANG_LABELS: Record<string, string> = {
@@ -19,13 +20,38 @@ export default function Navbar() {
   const router = useRouter();
   const pathname = usePathname();
   const [langOpen, setLangOpen] = useState(false);
+  const [username, setUsername] = useState<string | null>(null);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) {
+        setUsername(user.user_metadata?.username ?? user.email?.split('@')[0] ?? 'ユーザー');
+      }
+    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        setUsername(session.user.user_metadata?.username ?? session.user.email?.split('@')[0] ?? 'ユーザー');
+      } else {
+        setUsername(null);
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, []);
 
   const switchLocale = (newLocale: string) => {
-    // パスの /[locale]/... 部分を新しいロケールに置き換える
     const segments = pathname.split('/');
     segments[1] = newLocale;
     router.push(segments.join('/'));
     setLangOpen(false);
+  };
+
+  const handleLogout = async () => {
+    await fetch('/api/auth/logout', { method: 'POST' });
+    setUsername(null);
+    setUserMenuOpen(false);
+    router.refresh();
   };
 
   return (
@@ -40,7 +66,7 @@ export default function Navbar() {
         </Link>
 
         {/* ナビリンク */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           <Link
             href={`/${locale}/builds`}
             className="text-sm text-gray-300 hover:text-white transition-colors"
@@ -56,6 +82,42 @@ export default function Navbar() {
 
           {/* バージョン */}
           <span className="text-xs text-gray-600 font-mono hidden sm:inline">v1.00.1</span>
+
+          {/* ユーザーメニュー */}
+          {username ? (
+            <div className="relative">
+              <button
+                onClick={() => setUserMenuOpen(!userMenuOpen)}
+                className="text-sm text-amber-400 flex items-center gap-1 px-2 py-1 rounded hover:bg-gray-800 transition-colors"
+              >
+                👤 {username} <span className="text-xs">▾</span>
+              </button>
+              {userMenuOpen && (
+                <div className="absolute right-0 mt-1 bg-gray-800 border border-gray-700 rounded-md shadow-xl min-w-[140px]">
+                  <Link
+                    href={`/${locale}/my-builds`}
+                    onClick={() => setUserMenuOpen(false)}
+                    className="block px-3 py-2 text-sm text-gray-200 hover:bg-gray-700 transition-colors"
+                  >
+                    自分のビルド
+                  </Link>
+                  <button
+                    onClick={handleLogout}
+                    className="w-full text-left px-3 py-2 text-sm text-red-400 hover:bg-gray-700 transition-colors"
+                  >
+                    {t('logout')}
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <Link
+              href={`/${locale}/auth`}
+              className="text-sm text-gray-400 hover:text-white px-2 py-1 rounded hover:bg-gray-800 transition-colors"
+            >
+              {t('login')}
+            </Link>
+          )}
 
           {/* 言語切り替え */}
           <div className="relative">

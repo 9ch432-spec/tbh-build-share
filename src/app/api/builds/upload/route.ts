@@ -55,16 +55,23 @@ export async function POST(req: NextRequest) {
     }
 
     // Supabase保存
-    const { createClient } = await import('@supabase/supabase-js');
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    const { createClient: createServiceClient } = await import('@supabase/supabase-js');
+    const serviceSupabase = createServiceClient(supabaseUrl, supabaseKey);
+
+    // ログインユーザーを取得（未ログインはnull）
+    const { createClient: createAuthClient } = await import('@/lib/supabase/server');
+    const authSupabase = await createAuthClient();
+    const { data: { user } } = await authSupabase.auth.getUser();
 
     const buildId = uuidv4();
-    const { error: dbError } = await supabase.from('builds').insert({
+    const { error: dbError } = await serviceSupabase.from('builds').insert({
       id: buildId,
       title: title || null,
       note: note || null,
       is_public: isPublic,
       build_data: result.build,
+      user_id: user?.id ?? null,
+      username: user?.user_metadata?.username ?? null,
       created_at: new Date().toISOString(),
     });
 

@@ -22,6 +22,7 @@ interface BuildSummary {
   title: string | null;
   classes: string[];
   note: string | null;
+  username: string | null;
   createdAt: string;
 }
 
@@ -50,7 +51,7 @@ export default async function BuildsPage({
       const supabase = createClient(supabaseUrl, supabaseKey);
       const { data, error } = await supabase
         .from('builds')
-        .select('id, title, build_data, note, created_at')
+        .select('id, title, build_data, note, username, created_at')
         .eq('is_public', true)
         .order('created_at', { ascending: false })
         .range((page - 1) * 20, page * 20 - 1);
@@ -63,6 +64,7 @@ export default async function BuildsPage({
           title: row.title as string | null,
           classes: extractClasses(row.build_data),
           note: row.note as string | null,
+          username: row.username as string | null,
           createdAt: row.created_at as string,
         }));
         if (classFilter) {
@@ -183,9 +185,14 @@ function BuildCard({ build, locale }: { build: BuildSummary; locale: string }) {
         ))}
       </div>
       {build.note && <p className="text-xs text-gray-500 line-clamp-2">{build.note}</p>}
-      <p className="text-xs text-gray-600 mt-3">
-        {new Date(build.createdAt).toLocaleDateString(locale)}
-      </p>
+      <div className="flex items-center justify-between mt-3">
+        <p className="text-xs text-gray-600">
+          {new Date(build.createdAt).toLocaleDateString(locale)}
+        </p>
+        {build.username && (
+          <p className="text-xs text-gray-500">👤 {build.username}</p>
+        )}
+      </div>
     </Link>
   );
 }

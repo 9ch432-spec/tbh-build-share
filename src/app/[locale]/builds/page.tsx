@@ -193,14 +193,22 @@ async function fetchBuilds({
 
     if (error || !data) return [];
 
-    return data.map((row) => ({
+    let results = data.map((row) => ({
       id: row.id as string,
       title: row.title as string | null,
       classes: extractClasses(row.build_data),
       note: row.note as string | null,
       createdAt: row.created_at as string,
     }));
-  } catch {
+
+    // クラスフィルター（クライアント側でフィルタリング）
+    if (classFilter) {
+      results = results.filter((b) => b.classes.includes(classFilter));
+    }
+
+    return results;
+  } catch (e) {
+    console.error('fetchBuilds error:', e);
     return [];
   }
 }

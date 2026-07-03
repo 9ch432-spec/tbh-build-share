@@ -54,6 +54,9 @@ export default function Navbar() {
             {t('upload')}
           </Link>
 
+          {/* バージョン */}
+          <span className="text-xs text-gray-600 font-mono hidden sm:inline">v1.00.1</span>
+
           {/* 言語切り替え */}
           <div className="relative">
             <button

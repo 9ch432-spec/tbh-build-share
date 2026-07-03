@@ -185,16 +185,18 @@ async function fetchBuilds({
     const { createClient } = await import('@supabase/supabase-js');
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    let query = supabase
+    const { data, error } = await supabase
       .from('builds')
       .select('id, title, build_data, note, created_at')
       .eq('is_public', true)
       .order('created_at', { ascending: false })
       .range((page - 1) * 20, page * 20 - 1);
 
-    const { data, error } = await query;
-
-    if (error || !data) return [];
+    if (error) {
+      console.error('fetchBuilds Supabase error:', JSON.stringify(error));
+      return [];
+    }
+    if (!data) return [];
 
     let results = data.map((row) => ({
       id: row.id as string,

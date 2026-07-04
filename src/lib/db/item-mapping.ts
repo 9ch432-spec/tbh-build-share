@@ -146,12 +146,26 @@ function inferGradeFromSprite(sprite: string): number {
   const numMatch = sprite.match(/(\d+)$/);
   if (!numMatch) return 0;
   const num = parseInt(numMatch[1]);
-  if (num <= 5)  return 0; // Common
-  if (num <= 9)  return 1; // Uncommon
+  if (num <= 5)  return 0; // Common (Lv1-20)
+  if (num <= 9)  return 1; // Uncommon (Lv30-40... actually based on ItemKey grade digits)
   if (num <= 14) return 2; // Rare
   if (num <= 17) return 3; // Legendary
   if (num <= 19) return 4; // Immortal
   if (num <= 20) return 5; // Arcana+
+  return 0;
+}
+
+// ItemKeyからグレードを取得（装備系）
+// ItemKeyパターン: [タイプ3桁][グレード2桁][レベル帯2桁]
+// 例: 302171 → タイプ=30, グレード=2(Rare), レベル帯=17(Lv80)
+function getGradeFromItemKey(itemKey: number): number {
+  const s = String(itemKey);
+  if (s.length === 6) {
+    // 装備系: 6桁 = タイプ1桁 + タイプ1桁 + グレード1桁 + レベル帯3桁
+    // 例: 302171 → 30=SWORD_type, 2=Rare, 171=level80
+    const gradeDigit = parseInt(s[2]);
+    return gradeDigit; // 0=Common,1=Uncommon,2=Rare...
+  }
   return 0;
 }
 
@@ -170,8 +184,8 @@ export function getItemMapping(key: number): ItemMapping {
   const sprite_data_raw = RAW_SPRITE_MAP[key];
 
   if (sprite_data_raw) {
-    // 装備系
-    const grade = inferGradeFromSprite(sprite_data_raw);
+    // 装備系: ItemKeyからグレードを正確に取得
+    const grade = getGradeFromItemKey(key);
     const info = spriteToInfo(sprite_data_raw, grade);
     return {
       ...info,

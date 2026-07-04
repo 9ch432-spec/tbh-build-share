@@ -185,40 +185,47 @@ function HeroCard({ hero }: { hero: HeroData }) {
 
       {/* 装備スロット */}
       <div className="mx-5 mb-5">
-        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
-          {t('gear')} <span className="text-gray-600 normal-case font-normal">({hero.equippedItemKeys.filter(k => k > 0).length}/{hero.equippedItemKeys.length})</span>
-        </p>
-        <div className="grid grid-cols-5 gap-1">
-          {hero.equippedItemKeys.map((itemKey, i) => {
-            if (itemKey <= 0) {
-              return (
-                <div key={i} className="aspect-square rounded-md flex items-center justify-center bg-gray-800/30 border border-gray-700/20 text-gray-700 text-xs">·</div>
-              );
-            }
-            const mapping = getItemMapping(itemKey);
-            const gradeInfo = GRADES[mapping.grade];
-            return (
-              <div
-                key={i}
-                className="aspect-square rounded-md flex items-center justify-center border border-gray-700/40 bg-gray-900/50 hover:border-amber-600/60 transition-colors relative"
-                title={`${mapping.nameJa}${gradeInfo ? ` (${gradeInfo.nameJa})` : ''}\n#${itemKey}`}
-              >
-                <Image
-                  src={`https://tbherohelper.com/sprites/${mapping.sprite}.png`}
-                  alt={mapping.nameJa}
-                  width={32}
-                  height={32}
-                  className="object-contain p-0.5"
-                  unoptimized
-                  onError={(e) => {
-                    const el = e.target as HTMLImageElement;
-                    el.style.display = 'none';
-                  }}
-                />
+        {(() => {
+          const itemKeys = hero.equippedItemKeys ?? [];
+          return (
+            <>
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                {t('gear')} <span className="text-gray-600 normal-case font-normal">({itemKeys.filter(k => k > 0).length}/{itemKeys.length})</span>
+              </p>
+              <div className="grid grid-cols-5 gap-1">
+                {itemKeys.map((itemKey, i) => {
+                  if (itemKey <= 0) {
+                    return (
+                      <div key={i} className="aspect-square rounded-md flex items-center justify-center bg-gray-800/30 border border-gray-700/20 text-gray-700 text-xs">·</div>
+                    );
+                  }
+                  const mapping = getItemMapping(itemKey);
+                  const gradeInfo = GRADES[mapping.grade];
+                  return (
+                    <div
+                      key={i}
+                      className="aspect-square rounded-md flex items-center justify-center border border-gray-700/40 bg-gray-900/50 hover:border-amber-600/60 transition-colors relative"
+                      title={`${mapping.nameJa}${gradeInfo ? ` (${gradeInfo.nameJa})` : ''}\n#${itemKey}`}
+                    >
+                      <Image
+                        src={`https://tbherohelper.com/sprites/${mapping.sprite}.png`}
+                        alt={mapping.nameJa}
+                        width={32}
+                        height={32}
+                        className="object-contain p-0.5"
+                        unoptimized
+                        onError={(e) => {
+                          const el = e.target as HTMLImageElement;
+                          el.style.display = 'none';
+                        }}
+                      />
+                    </div>
+                  );
+                })}
               </div>
-            );
-          })}
-        </div>
+            </>
+          );
+        })()}
       </div>
     </div>
   );

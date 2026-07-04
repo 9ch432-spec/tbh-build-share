@@ -64,18 +64,12 @@ export const MATERIALS: MaterialItem[] = [
   // Celestial（grade 7）
   { key: 117001, name: 'Celestial Ruby',     nameJa: 'セレスティアルルビー',     category: 'Decoration', grade: 7 },
   { key: 117002, name: 'Celestial Sapphire', nameJa: 'セレスティアルサファイア',  category: 'Decoration', grade: 7 },
-  { key: 117003, name: 'Celestial Emerald',  nameJa: 'セレスティアルエメラルド',  category: 'Decoration', grade: 7 },
-  { key: 117004, name: 'Celestial Amethyst', nameJa: 'セレスティアルアメジスト',  category: 'Decoration', grade: 7 },
   // Divine（grade 8）
-  { key: 118001, name: 'Divine Ruby',        nameJa: 'ディバインルビー',         category: 'Decoration', grade: 8 },
+  { key: 118001, name: 'Divine Ruby',        nameJa: 'ディバインルビー',          category: 'Decoration', grade: 8 },
   { key: 118002, name: 'Divine Sapphire',    nameJa: 'ディバインサファイア',      category: 'Decoration', grade: 8 },
-  { key: 118003, name: 'Divine Emerald',     nameJa: 'ディバインエメラルド',      category: 'Decoration', grade: 8 },
-  { key: 118004, name: 'Divine Amethyst',    nameJa: 'ディバインアメジスト',      category: 'Decoration', grade: 8 },
   // Cosmic（grade 9）
-  { key: 119001, name: 'Cosmic Ruby',        nameJa: 'コズミックルビー',         category: 'Decoration', grade: 9 },
+  { key: 119001, name: 'Cosmic Ruby',        nameJa: 'コズミックルビー',          category: 'Decoration', grade: 9 },
   { key: 119002, name: 'Cosmic Sapphire',    nameJa: 'コズミックサファイア',      category: 'Decoration', grade: 9 },
-  { key: 119003, name: 'Cosmic Emerald',     nameJa: 'コズミックエメラルド',      category: 'Decoration', grade: 9 },
-  { key: 119004, name: 'Cosmic Amethyst',    nameJa: 'コズミックアメジスト',      category: 'Decoration', grade: 9 },
   // Common Engraving
   { key: 120001, name: 'Goblin Hide',    nameJa: 'ゴブリンの皮',        category: 'Engraving', grade: 0 },
   { key: 120002, name: 'Skeleton Bone',  nameJa: 'スケルトンの骨',      category: 'Engraving', grade: 0 },
@@ -228,7 +222,32 @@ export const GEAR_ITEMS: GearItem[] = [
   { key: 350011, name: 'Fate Axe',          nameJa: 'フェイトアックス',   type: 'AXE', heroClass: 'Slayer', grade: 0, atk: 178, atkSpd: 2.5, minLevel: 50,  obtainable: true },
   { key: 350014, name: 'Rage Axe',          nameJa: 'レイジアックス',     type: 'AXE', heroClass: 'Slayer', grade: 0, atk: 296, atkSpd: 3,   minLevel: 65,  obtainable: true },
   { key: 350017, name: 'Dimensional Axe',   nameJa: 'ディメンジョナルアックス',type:'AXE',heroClass:'Slayer',grade:0,atk:454,atkSpd:3,minLevel:80,obtainable:true },
-  { key: 350020, name: 'Radiant Axe',       nameJa: 'レイディアントアックス',type:'AXE',heroClass:'Slayer',grade:0,atk:125,atkSpd:3,minLevel:100,obtainable:true },
+  // ===== Uncommon weapons (grade:1) - same sprite keys, higher grade =====
+  { key: 300007, name: 'Knight Sword',      nameJa: 'ナイトソード (U)',    type:'SWORD',heroClass:'Knight',grade:1,atk:30,  atkSpd:2,  minLevel:30, obtainable:true },
+  { key: 300009, name: 'Rune Sword',        nameJa: 'ルーンソード (U)',    type:'SWORD',heroClass:'Knight',grade:1,atk:66,  atkSpd:2,  minLevel:40, obtainable:true },
+  { key: 300011, name: 'Fate Sword',        nameJa: 'フェイトソード (U)',  type:'SWORD',heroClass:'Knight',grade:1,atk:141, atkSpd:2.5,minLevel:50, obtainable:true },
+  { key: 300014, name: 'Vengeance Sword',   nameJa: 'ヴェンジェンスソード (U)',type:'SWORD',heroClass:'Knight',grade:1,atk:234,atkSpd:3,minLevel:65, obtainable:true },
+  { key: 300017, name: 'Dimensional Sword', nameJa: 'ディメンジョナルソード (U)',type:'SWORD',heroClass:'Knight',grade:1,atk:359,atkSpd:3,minLevel:80,obtainable:true },
+  { key: 310007, name: 'Dusk Bow',          nameJa: 'ダスクボウ (U)',      type:'BOW',heroClass:'Ranger',grade:1,atk:32,  atkSpd:4,  minLevel:30, obtainable:true },
+  { key: 310009, name: 'Elite Bow',         nameJa: 'エリートボウ (U)',    type:'BOW',heroClass:'Ranger',grade:1,atk:66,  atkSpd:4,  minLevel:40, obtainable:true },
+  { key: 310011, name: 'Mystic Bow',        nameJa: 'ミスティックボウ (U)',type:'BOW',heroClass:'Ranger',grade:1,atk:140, atkSpd:4.5,minLevel:50, obtainable:true },
+  { key: 310014, name: 'Limitless Bow',     nameJa: 'リミットレスボウ (U)',type:'BOW',heroClass:'Ranger',grade:1,atk:233,atkSpd:5,  minLevel:65, obtainable:true },
+  { key: 310017, name: 'Shadow Bow',        nameJa: 'シャドウボウ (U)',    type:'BOW',heroClass:'Ranger',grade:1,atk:359,atkSpd:5,  minLevel:80, obtainable:true },
+  // ===== Rare weapons (grade:2) =====
+  { key: 300007, name: 'Knight Sword',      nameJa: 'ナイトソード (R)',    type:'SWORD',heroClass:'Knight',grade:2,atk:45,  atkSpd:2,  minLevel:30, obtainable:true },
+  { key: 300009, name: 'Rune Sword',        nameJa: 'ルーンソード (R)',    type:'SWORD',heroClass:'Knight',grade:2,atk:99,  atkSpd:2,  minLevel:40, obtainable:true },
+  { key: 300011, name: 'Fate Sword',        nameJa: 'フェイトソード (R)',  type:'SWORD',heroClass:'Knight',grade:2,atk:211, atkSpd:2.5,minLevel:50, obtainable:true },
+  { key: 300014, name: 'Vengeance Sword',   nameJa: 'ヴェンジェンスソード (R)',type:'SWORD',heroClass:'Knight',grade:2,atk:351,atkSpd:3,minLevel:65, obtainable:true },
+  { key: 300017, name: 'Dimensional Sword', nameJa: 'ディメンジョナルソード (R)',type:'SWORD',heroClass:'Knight',grade:2,atk:538,atkSpd:3,minLevel:80,obtainable:true },
+  // ===== Legendary weapons (grade:3) =====
+  { key: 300009, name: 'Rune Sword',        nameJa: 'ルーンソード (L)',    type:'SWORD',heroClass:'Knight',grade:3,atk:148, atkSpd:2,  minLevel:40, obtainable:true },
+  { key: 300011, name: 'Fate Sword',        nameJa: 'フェイトソード (L)',  type:'SWORD',heroClass:'Knight',grade:3,atk:317, atkSpd:2.5,minLevel:50, obtainable:true },
+  { key: 300014, name: 'Vengeance Sword',   nameJa: 'ヴェンジェンスソード (L)',type:'SWORD',heroClass:'Knight',grade:3,atk:527,atkSpd:3,minLevel:65, obtainable:true },
+  { key: 300017, name: 'Dimensional Sword', nameJa: 'ディメンジョナルソード (L)',type:'SWORD',heroClass:'Knight',grade:3,atk:807,atkSpd:3,minLevel:80,obtainable:true },
+  { key: 310014, name: 'Limitless Bow',     nameJa: 'リミットレスボウ (L)',type:'BOW',heroClass:'Ranger',grade:3,atk:350,atkSpd:5,  minLevel:65, obtainable:true },
+  { key: 310017, name: 'Shadow Bow',        nameJa: 'シャドウボウ (L)',    type:'BOW',heroClass:'Ranger',grade:3,atk:538,atkSpd:5,  minLevel:80, obtainable:true },
+  { key: 320014, name: 'Sacred Staff',      nameJa: 'セイクリッドスタッフ (L)',type:'STAFF',heroClass:'Sorcerer',grade:3,atk:338,atkSpd:2,minLevel:65,obtainable:true },
+  { key: 320017, name: 'Tempest Staff',     nameJa: 'テンペストスタッフ (L)',type:'STAFF',heroClass:'Sorcerer',grade:3,atk:518,atkSpd:2,minLevel:80,obtainable:true },
 ];
 
 // ===== SHIELD (Knight off-hand) =====

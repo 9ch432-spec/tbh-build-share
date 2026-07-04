@@ -23,6 +23,20 @@ const GEAR_TYPES_JA: Record<string, string> = {
   RING:'リング', BRACER:'ブレーサー',
 };
 
+// グレード別ボーダーカラー
+const GRADE_BORDER = [
+  'border-gray-700',   // 0 Common
+  'border-green-700',  // 1 Uncommon
+  'border-blue-700',   // 2 Rare
+  'border-amber-500',  // 3 Legendary
+  'border-orange-500', // 4 Immortal
+  'border-purple-500', // 5 Arcana
+  'border-pink-500',   // 6 Beyond
+  'border-cyan-400',   // 7 Celestial
+  'border-yellow-300', // 8 Divine
+  'border-white',      // 9 Cosmic
+];
+
 type TabMode = 'material' | 'gear';
 
 export default function ItemsTab() {
@@ -32,7 +46,6 @@ export default function ItemsTab() {
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
   const [heroFilter, setHeroFilter] = useState<string | null>(null);
 
-  // 素材フィルター
   const filteredMaterials = useMemo(() => {
     return MATERIALS.filter(m => {
       const q = search.toLowerCase();
@@ -43,7 +56,6 @@ export default function ItemsTab() {
     });
   }, [search, gradeFilter, categoryFilter]);
 
-  // ギアフィルター
   const filteredGear = useMemo(() => {
     return GEAR_ITEMS.filter(g => {
       const q = search.toLowerCase();
@@ -58,25 +70,18 @@ export default function ItemsTab() {
     <div>
       {/* モード切り替え */}
       <div className="flex gap-2 mb-4">
-        <button
-          onClick={() => setMode('material')}
-          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-            mode === 'material' ? 'bg-amber-500 text-gray-900' : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-          }`}
-        >
-          💎 素材
-        </button>
-        <button
-          onClick={() => setMode('gear')}
-          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-            mode === 'gear' ? 'bg-amber-500 text-gray-900' : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-          }`}
-        >
-          ⚔️ 武器・装備
-        </button>
+        {(['material', 'gear'] as const).map((m) => (
+          <button key={m} onClick={() => setMode(m)}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              mode === m ? 'bg-amber-500 text-gray-900' : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+            }`}
+          >
+            {m === 'material' ? '💎 素材' : '⚔️ 武器・装備'}
+          </button>
+        ))}
       </div>
 
-      {/* 検索・フィルター */}
+      {/* フィルター */}
       <div className="flex flex-wrap gap-3 mb-4">
         <input
           type="text"
@@ -93,22 +98,16 @@ export default function ItemsTab() {
           <option value="">全グレード</option>
           {GRADES.map((g, i) => <option key={i} value={i}>{g.nameJa}</option>)}
         </select>
-
         {mode === 'material' && (
-          <select
-            value={categoryFilter ?? ''}
-            onChange={(e) => setCategoryFilter(e.target.value || null)}
+          <select value={categoryFilter ?? ''} onChange={(e) => setCategoryFilter(e.target.value || null)}
             className="bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-gray-300 text-sm focus:outline-none"
           >
             <option value="">全カテゴリ</option>
             {CATEGORIES.map(c => <option key={c} value={c}>{CATEGORIES_JA[c]}</option>)}
           </select>
         )}
-
         {mode === 'gear' && (
-          <select
-            value={heroFilter ?? ''}
-            onChange={(e) => setHeroFilter(e.target.value || null)}
+          <select value={heroFilter ?? ''} onChange={(e) => setHeroFilter(e.target.value || null)}
             className="bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-gray-300 text-sm focus:outline-none"
           >
             <option value="">全ヒーロー</option>
@@ -118,7 +117,7 @@ export default function ItemsTab() {
       </div>
 
       <p className="text-xs text-gray-500 mb-4">
-        {mode === 'material' ? filteredMaterials.length : filteredGear.length}件表示
+        {mode === 'material' ? filteredMaterials.length : filteredGear.length}件
       </p>
 
       {/* 素材一覧 */}
@@ -126,16 +125,12 @@ export default function ItemsTab() {
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
           {filteredMaterials.map(item => {
             const grade = GRADES[item.grade];
+            const border = GRADE_BORDER[item.grade] ?? 'border-gray-700';
             return (
-              <div key={item.key} className="bg-gray-900 border border-gray-800 rounded-xl p-3 flex flex-col items-center gap-2 hover:border-amber-700 transition-colors">
+              <div key={item.key} className={`bg-gray-900 border ${border} rounded-xl p-3 flex flex-col items-center gap-2 hover:brightness-110 transition-all`}>
                 <div className="w-12 h-12 relative">
-                  <Image
-                    src={`${SPRITE_BASE}/Item_${item.key}.png`}
-                    alt={item.name}
-                    width={48}
-                    height={48}
-                    className="object-contain"
-                    unoptimized
+                  <Image src={`${SPRITE_BASE}/Item_${item.key}.png`} alt={item.name}
+                    width={48} height={48} className="object-contain" unoptimized
                     onError={(e) => { (e.target as HTMLImageElement).style.opacity = '0'; }}
                   />
                 </div>
@@ -155,16 +150,12 @@ export default function ItemsTab() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {filteredGear.map(item => {
             const grade = GRADES[item.grade];
+            const border = GRADE_BORDER[item.grade] ?? 'border-gray-700';
             return (
-              <div key={item.key} className="bg-gray-900 border border-gray-800 rounded-xl p-4 flex gap-3 items-center hover:border-amber-700 transition-colors">
+              <div key={`${item.key}-${item.grade}`} className={`bg-gray-900 border ${border} rounded-xl p-4 flex gap-3 items-center hover:brightness-110 transition-all`}>
                 <div className="w-12 h-12 flex-shrink-0">
-                  <Image
-                    src={`${SPRITE_BASE}/${item.type}_${item.key}.png`}
-                    alt={item.name}
-                    width={48}
-                    height={48}
-                    className="object-contain"
-                    unoptimized
+                  <Image src={`${SPRITE_BASE}/${item.type}_${item.key}.png`} alt={item.name}
+                    width={48} height={48} className="object-contain" unoptimized
                     onError={(e) => { (e.target as HTMLImageElement).style.opacity = '0.2'; }}
                   />
                 </div>

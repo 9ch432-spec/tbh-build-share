@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { MATERIALS, GEAR_ITEMS } from '@/lib/db/all-items';
 import { GRADES } from '@/lib/db/grades';
 import { SPRITE_BASE } from '@/lib/db/item-mapping';
+import { getInherentStats, getSlotsForGrade } from '@/lib/db/inherent-stats';
 
 const HERO_CLASSES = ['Knight', 'Ranger', 'Sorcerer', 'Priest', 'Hunter', 'Slayer'];
 const CATEGORIES = ['Decoration', 'Engraving', 'Inscription', 'Crafting', 'Offering'];

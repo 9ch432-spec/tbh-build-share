@@ -5,18 +5,21 @@ import ItemsTab from './ItemsTab';
 import HeroesTab from './HeroesTab';
 import SkillsTab from './SkillsTab';
 import PetsTab from './PetsTab';
+import OfferingTab from './OfferingTab';
 
 const TABS = [
-  { id: 'items',  label: '🎒 アイテム' },
-  { id: 'heroes', label: '⚔️ ヒーロー' },
-  { id: 'skills', label: '✨ スキル' },
-  { id: 'pets',   label: '🐾 ペット' },
+  { id: 'items',    label: '🎒 アイテム' },
+  { id: 'heroes',   label: '⚔️ ヒーロー' },
+  { id: 'skills',   label: '✨ スキル' },
+  { id: 'pets',     label: '🐾 ペット' },
+  { id: 'offering', label: '🪙 オファリング' },
 ] as const;
 
 type TabId = typeof TABS[number]['id'];
 
-export default function DatabaseTabs() {
-  const [activeTab, setActiveTab] = useState<TabId>('items');
+export default function DatabaseTabs({ initialTab }: { initialTab?: string }) {
+  const validTab = TABS.find(t => t.id === initialTab)?.id ?? 'items';
+  const [activeTab, setActiveTab] = useState<TabId>(validTab);
 
   return (
     <div>
@@ -37,10 +40,11 @@ export default function DatabaseTabs() {
       </div>
 
       <div>
-        {activeTab === 'items'  && <ItemsTab />}
-        {activeTab === 'heroes' && <HeroesTab />}
-        {activeTab === 'skills' && <SkillsTab />}
-        {activeTab === 'pets'   && <PetsTab />}
+        {activeTab === 'items'    && <ItemsTab />}
+        {activeTab === 'heroes'   && <HeroesTab />}
+        {activeTab === 'skills'   && <SkillsTab />}
+        {activeTab === 'pets'     && <PetsTab />}
+        {activeTab === 'offering' && <OfferingTab />}
       </div>
     </div>
   );

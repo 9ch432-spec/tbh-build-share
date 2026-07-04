@@ -74,6 +74,12 @@ export default function Navbar() {
             {t('builds')}
           </Link>
           <Link
+            href={`/${locale}/database?tab=offering`}
+            className="text-sm text-gray-300 hover:text-white transition-colors"
+          >
+            🪙
+          </Link>
+          <Link
             href={`/${locale}/upload`}
             className="text-sm bg-amber-500 hover:bg-amber-400 text-gray-900 font-semibold px-3 py-1.5 rounded-md transition-colors"
           >

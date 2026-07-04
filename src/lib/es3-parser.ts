@@ -111,6 +111,22 @@ function parsePlayerSaveData(root: Record<string, unknown>): Record<string, unkn
 }
 
 /**
+ * セーブデータのスキルキーをtbherohelperのスキルIDに変換
+ * セーブデータ: x0001 形式（スターター）→ tbherohelper: x0101 形式
+ * 例: 40001 → 40101, 30001 → 30101
+ * 例: 40201 → 40201（変換不要）
+ */
+function normalizeSkillKey(key: number): number {
+  if (key <= 0) return key;
+  const str = String(key);
+  // 末尾が "001" の場合は "101" に変換
+  if (str.endsWith('001')) {
+    return parseInt(str.slice(0, -3) + '101');
+  }
+  return key;
+}
+
+/**
  * heroSaveDatas からHeroDataを構築
  */
 function buildHeroData(
@@ -127,7 +143,7 @@ function buildHeroData(
     exp: Number(heroSave.HeroExp ?? 0),
     abilityPoint: Number(heroSave.AbilityPoint ?? 0),
     allocatedAbilityPoint: Number(heroSave.AllocatedHeroAbilityPoint ?? 0),
-    equippedSkillKeys: (heroSave.equippedSKillKey as number[] | undefined) ?? [],
+    equippedSkillKeys: ((heroSave.equippedSKillKey as number[] | undefined) ?? []).map(normalizeSkillKey),
     equippedItemIds: (heroSave.equippedItemIds as number[] | undefined) ?? [],
     equippedItemKeys,
     unlockedAttributeGroupKeys: (heroSave.unlockedAttributeGroupKeys as number[] | undefined) ?? [],

@@ -77,7 +77,7 @@ export default function Navbar() {
             href={`/${locale}/database?tab=offering`}
             className="text-sm text-gray-300 hover:text-white transition-colors"
           >
-            🪙
+            祈願確率
           </Link>
           <Link
             href={`/${locale}/upload`}

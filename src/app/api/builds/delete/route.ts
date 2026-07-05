@@ -1,31 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
 
 export async function DELETE(req: NextRequest) {
-  const { buildId } = await req.json() as { buildId: string };
+  const { buildId, deleteToken } = await req.json() as { buildId: string; deleteToken: string };
 
-  if (!buildId) {
-    return NextResponse.json({ error: 'buildId is required' }, { status: 400 });
+  if (!buildId || !deleteToken) {
+    return NextResponse.json({ error: 'buildIdとdeleteTokenが必要です' }, { status: 400 });
   }
 
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-  if (!user) {
-    return NextResponse.json({ error: '認証が必要です' }, { status: 401 });
+  if (!supabaseUrl || !supabaseKey) {
+    return NextResponse.json({ error: 'Supabaseが設定されていません' }, { status: 500 });
   }
 
-  // service_roleで削除（RLSをバイパス）
-  const { createClient: createServiceClient } = await import('@supabase/supabase-js');
-  const serviceSupabase = createServiceClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
+  const { createClient } = await import('@supabase/supabase-js');
+  const supabase = createClient(supabaseUrl, supabaseKey);
 
-  // 所有者確認
-  const { data: build } = await serviceSupabase
+  // トークンで所有権を確認してから削除
+  const { data: build } = await supabase
     .from('builds')
-    .select('user_id')
+    .select('id, delete_token')
     .eq('id', buildId)
     .single();
 
@@ -33,17 +28,14 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ error: 'ビルドが見つかりません' }, { status: 404 });
   }
 
-  if (build.user_id !== user.id) {
-    return NextResponse.json({ error: '削除権限がありません' }, { status: 403 });
+  if (build.delete_token !== deleteToken) {
+    return NextResponse.json({ error: '削除トークンが正しくありません' }, { status: 403 });
   }
 
-  const { error } = await serviceSupabase
-    .from('builds')
-    .delete()
-    .eq('id', buildId);
+  const { error } = await supabase.from('builds').delete().eq('id', buildId);
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: '削除に失敗しました' }, { status: 500 });
   }
 
   return NextResponse.json({ success: true });

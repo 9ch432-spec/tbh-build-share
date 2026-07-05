@@ -11,11 +11,14 @@ export default function UploadForm() {
 
   const [file, setFile] = useState<File | null>(null);
   const [dragging, setDragging] = useState(false);
+  const [username, setUsername] = useState('');
   const [title, setTitle] = useState('');
   const [note, setNote] = useState('');
   const [isPublic, setIsPublic] = useState(true);
   const [status, setStatus] = useState<'idle' | 'processing' | 'success' | 'error'>('idle');
   const [errorMsg, setErrorMsg] = useState('');
+  const [deleteToken, setDeleteToken] = useState('');
+  const [buildId, setBuildId] = useState('');
   const fileRef = useRef<HTMLInputElement>(null);
 
   const handleFile = (f: File) => {
@@ -55,6 +58,7 @@ export default function UploadForm() {
 
     const formData = new FormData();
     formData.append('file', file);
+    formData.append('username', username.trim() || '名無し');
     formData.append('title', title);
     formData.append('note', note);
     formData.append('isPublic', String(isPublic));
@@ -64,7 +68,7 @@ export default function UploadForm() {
         method: 'POST',
         body: formData,
       });
-      const data = await res.json() as { error?: string; encrypted?: boolean; buildId?: string };
+      const data = await res.json() as { error?: string; encrypted?: boolean; buildId?: string; deleteToken?: string };
 
       if (!res.ok) {
         setErrorMsg(data.error || t('error.parseFailed'));
@@ -73,14 +77,73 @@ export default function UploadForm() {
       }
 
       setStatus('success');
-      setTimeout(() => {
-        router.push(`/${locale}/builds/${data.buildId}`);
-      }, 1500);
+      setBuildId(data.buildId ?? '');
+      setDeleteToken(data.deleteToken ?? '');
     } catch {
       setErrorMsg(t('error.parseFailed'));
       setStatus('error');
     }
   };
+
+  const copyDeleteToken = () => {
+    navigator.clipboard.writeText(deleteToken);
+  };
+
+  // 成功画面
+  if (status === 'success' && buildId) {
+    return (
+      <div className="space-y-6">
+        <div className="bg-green-900/20 border border-green-800 rounded-xl p-6 text-center">
+          <p className="text-3xl mb-3">✅</p>
+          <p className="text-green-400 font-bold text-lg">ビルドを共有しました！</p>
+        </div>
+
+        {/* 削除トークン */}
+        <div className="bg-gray-900 border border-amber-800/50 rounded-xl p-5">
+          <p className="text-amber-400 font-semibold mb-2">🔑 削除用トークン</p>
+          <p className="text-gray-400 text-sm mb-3">
+            このトークンをメモしておくと、後でビルドを削除できます。
+            <span className="text-red-400">紛失すると削除できなくなります。</span>
+          </p>
+          <div className="flex gap-2">
+            <code className="flex-1 bg-gray-800 text-amber-300 font-mono text-sm px-3 py-2 rounded-lg overflow-x-auto">
+              {deleteToken}
+            </code>
+            <button
+              onClick={copyDeleteToken}
+              className="text-sm bg-gray-700 hover:bg-gray-600 text-gray-200 px-3 py-2 rounded-lg transition-colors flex-shrink-0"
+            >
+              コピー
+            </button>
+          </div>
+        </div>
+
+        {/* ビルドを見る */}
+        <div className="flex gap-3">
+          <button
+            onClick={() => router.push(`/${locale}/builds/${buildId}`)}
+            className="flex-1 bg-amber-500 hover:bg-amber-400 text-gray-900 font-bold py-3 rounded-lg transition-colors"
+          >
+            ビルドを見る
+          </button>
+          <button
+            onClick={() => {
+              setStatus('idle');
+              setFile(null);
+              setTitle('');
+              setNote('');
+              setUsername('');
+              setDeleteToken('');
+              setBuildId('');
+            }}
+            className="flex-1 bg-gray-800 hover:bg-gray-700 text-gray-200 py-3 rounded-lg transition-colors"
+          >
+            別のビルドを投稿
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -116,9 +179,7 @@ export default function UploadForm() {
           {file ? (
             <div>
               <p className="text-green-400 font-semibold text-lg">✓ {file.name}</p>
-              <p className="text-gray-500 text-sm mt-1">
-                {(file.size / 1024).toFixed(1)} KB
-              </p>
+              <p className="text-gray-500 text-sm mt-1">{(file.size / 1024).toFixed(1)} KB</p>
             </div>
           ) : (
             <div>
@@ -127,6 +188,22 @@ export default function UploadForm() {
               <p className="text-gray-500 text-sm mt-2">{t('fileHint')}</p>
             </div>
           )}
+        </div>
+
+        {/* 投稿者名 */}
+        <div>
+          <label className="block text-sm text-gray-300 mb-1" htmlFor="username">
+            投稿者名 <span className="text-gray-500 text-xs">（省略すると「名無し」）</span>
+          </label>
+          <input
+            id="username"
+            type="text"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            maxLength={30}
+            placeholder="名無し"
+            className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-gray-100 focus:outline-none focus:border-amber-500 transition-colors"
+          />
         </div>
 
         {/* ビルド名 */}
@@ -141,7 +218,6 @@ export default function UploadForm() {
             onChange={(e) => setTitle(e.target.value)}
             maxLength={100}
             className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-gray-100 focus:outline-none focus:border-amber-500 transition-colors"
-            placeholder="例: 火力特化ナイト"
           />
         </div>
 
@@ -186,17 +262,10 @@ export default function UploadForm() {
           </p>
         )}
 
-        {/* 成功 */}
-        {status === 'success' && (
-          <p className="text-green-400 text-sm bg-green-900/20 border border-green-800 rounded-lg px-4 py-3">
-            ✓ {t('success')}
-          </p>
-        )}
-
         {/* 送信ボタン */}
         <button
           type="submit"
-          disabled={!file || status === 'processing' || status === 'success'}
+          disabled={!file || status === 'processing'}
           className="w-full bg-amber-500 hover:bg-amber-400 disabled:bg-gray-700 disabled:text-gray-500 text-gray-900 font-bold py-3 rounded-lg transition-colors text-lg"
         >
           {status === 'processing' ? t('processing') : t('submit')}

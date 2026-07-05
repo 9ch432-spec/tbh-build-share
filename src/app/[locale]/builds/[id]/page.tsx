@@ -1,13 +1,15 @@
-import { notFound } from 'next/navigation';
 import { getLocale, getTranslations } from 'next-intl/server';
 import Navbar from '@/components/Navbar';
 import BuildViewer from '@/components/BuildViewer';
+import ShareButtonClient from '@/components/ShareButtonClient';
+import DeleteBuildButton from '@/components/DeleteBuildButton';
 import type { ParsedBuild } from '@/lib/es3-parser';
 
 interface BuildRecord {
   id: string;
   title: string | null;
   note: string | null;
+  username: string | null;
   build_data: ParsedBuild;
   is_public: boolean;
   created_at: string;
@@ -42,19 +44,30 @@ export default async function BuildDetailPage({
       <main className="max-w-5xl mx-auto px-4 py-8">
         {/* ヘッダー */}
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-amber-400">
-            {build.title || '名無しのビルド'}
-          </h1>
-          {build.note && (
-            <p className="text-gray-400 mt-2 text-sm whitespace-pre-line">{build.note}</p>
-          )}
-          <p className="text-gray-600 text-xs mt-2">
-            {t('createdAt')}: {new Date(build.created_at).toLocaleDateString(locale)}
-          </p>
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex-1 min-w-0">
+              <h1 className="text-2xl font-bold text-amber-400">
+                {build.title || '名無しのビルド'}
+              </h1>
+              {build.note && (
+                <p className="text-gray-400 mt-2 text-sm whitespace-pre-line">{build.note}</p>
+              )}
+              <div className="flex items-center gap-3 mt-2">
+                <p className="text-gray-600 text-xs">
+                  {t('createdAt')}: {new Date(build.created_at).toLocaleDateString(locale)}
+                </p>
+                {build.username && (
+                  <p className="text-gray-500 text-xs">👤 {build.username}</p>
+                )}
+              </div>
+            </div>
+            {/* 削除ボタン（トークン認証） */}
+            <DeleteBuildButton buildId={id} locale={locale} />
+          </div>
         </div>
 
         {/* 共有ボタン */}
-        <ShareButton buildId={id} />
+        <ShareButtonClient buildId={id} />
 
         {/* ビルド表示 */}
         <BuildViewer build={build.build_data} />
@@ -63,33 +76,16 @@ export default async function BuildDetailPage({
   );
 }
 
-function ShareButton({ buildId }: { buildId: string }) {
-  return <ShareButtonClient buildId={buildId} />;
-}
-
-// クライアントコンポーネントとして分離
-import ShareButtonClient from '@/components/ShareButtonClient';
-
 async function fetchBuild(id: string): Promise<BuildRecord | null> {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-  if (!supabaseUrl || !supabaseKey || supabaseUrl === 'YOUR_SUPABASE_URL') {
-    // デモモード: null（ビルドが見つからない）
-    return null;
-  }
+  if (!supabaseUrl || !supabaseKey || supabaseUrl === 'YOUR_SUPABASE_URL') return null;
 
   try {
     const { createClient } = await import('@supabase/supabase-js');
     const supabase = createClient(supabaseUrl, supabaseKey);
-
     const { data, error } = await supabase
-      .from('builds')
-      .select('*')
-      .eq('id', id)
-      .eq('is_public', true)
-      .single();
-
+      .from('builds').select('*').eq('id', id).eq('is_public', true).single();
     if (error || !data) return null;
     return data as BuildRecord;
   } catch {

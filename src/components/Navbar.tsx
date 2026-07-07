@@ -41,6 +41,12 @@ export default function Navbar() {
         {/* ナビリンク */}
         <div className="flex items-center gap-3">
           <Link
+            href={`/${locale}/market`}
+            className="text-sm text-gray-300 hover:text-white transition-colors"
+          >
+            📈 マーケット
+          </Link>
+          <Link
             href={`/${locale}/database?tab=offering`}
             className="text-sm text-gray-300 hover:text-white transition-colors"
           >

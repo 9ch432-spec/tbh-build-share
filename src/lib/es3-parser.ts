@@ -31,6 +31,16 @@ export const HERO_KEY_TO_CLASS: Record<number, string> = {
   601: 'Slayer',
 };
 
+export interface ItemSlotData {
+  uniqueId: string;
+  itemKey: number;
+  decorationItemKeys: number[];   // 装飾スロット（宝石系）
+  engravingItemKeys: number[];    // 彫刻スロット（モンスター素材系）
+  inscriptionItemKeys: number[];  // 碑文スロット（巻物系）
+  enhanceLevel: number;           // 強化レベル
+  inherentOptionValues: number[]; // 固有ステータス値
+}
+
 export interface HeroData {
   index: number;
   heroKey: number;
@@ -42,6 +52,7 @@ export interface HeroData {
   equippedSkillKeys: number[];
   equippedItemIds: number[];      // UniqueId (64bit)
   equippedItemKeys: number[];     // ItemKey (種類キー)
+  equippedItemsDetail: ItemSlotData[]; // 装備詳細（スロット情報含む）
   unlockedAttributeGroupKeys: number[];
   isUnlocked: boolean;
 }
@@ -132,7 +143,8 @@ function normalizeSkillKey(key: number): number {
 function buildHeroData(
   heroSave: Record<string, unknown>,
   index: number,
-  equippedItemKeys: number[] = []
+  equippedItemKeys: number[] = [],
+  equippedItemsDetail: ItemSlotData[] = []
 ): HeroData {
   const heroKey = Number(heroSave.heroKey ?? 0);
   return {
@@ -146,6 +158,7 @@ function buildHeroData(
     equippedSkillKeys: ((heroSave.equippedSKillKey as number[] | undefined) ?? []).map(normalizeSkillKey),
     equippedItemIds: (heroSave.equippedItemIds as number[] | undefined) ?? [],
     equippedItemKeys,
+    equippedItemsDetail,
     unlockedAttributeGroupKeys: (heroSave.unlockedAttributeGroupKeys as number[] | undefined) ?? [],
     isUnlocked: Boolean(heroSave.IsUnLock ?? false),
   };
@@ -160,25 +173,89 @@ function extractBuildFromPlayerData(playerData: Record<string, unknown>): Parsed
   const heroSaveDatas = (playerData.heroSaveDatas as Record<string, unknown>[] | undefined) ?? [];
   const itemSaveDatas = (playerData.itemSaveDatas as Record<string, unknown>[] | undefined) ?? [];
 
-  // UniqueId → ItemKey のマップを作成
-  const uniqueIdToItemKey = new Map<string, number>();
+  // UniqueId → フル装備データのマップを作成
+  const uniqueIdToItemData = new Map<string, ItemSlotData>();
   for (const item of itemSaveDatas) {
     const uniqueId = item.UniqueId;
     const itemKey = item.ItemKey;
-    if (uniqueId != null && itemKey != null) {
-      uniqueIdToItemKey.set(String(uniqueId), Number(itemKey));
-    }
+    if (uniqueId == null || itemKey == null) continue;
+    const uid = String(uniqueId);
+
+    // 装飾スロット（DecorationItemKeys / decorationItemKeys / DecorationKeys 等複数パターン対応）
+    const decoKeys = (
+      (item.DecorationItemKeys as number[] | undefined) ??
+      (item.decorationItemKeys as number[] | undefined) ??
+      []
+    ).filter((k: number) => k > 0);
+
+    // 彫刻スロット
+    const engKeys = (
+      (item.EngravingItemKeys as number[] | undefined) ??
+      (item.engravingItemKeys as number[] | undefined) ??
+      []
+    ).filter((k: number) => k > 0);
+
+    // 碑文スロット
+    const insKeys = (
+      (item.InscriptionItemKeys as number[] | undefined) ??
+      (item.inscriptionItemKeys as number[] | undefined) ??
+      []
+    ).filter((k: number) => k > 0);
+
+    // 固有ステータス値
+    const inherentVals = (
+      (item.InherentOptionValues as number[] | undefined) ??
+      (item.inherentOptionValues as number[] | undefined) ??
+      []
+    );
+
+    uniqueIdToItemData.set(uid, {
+      uniqueId: uid,
+      itemKey: Number(itemKey),
+      decorationItemKeys: decoKeys,
+      engravingItemKeys: engKeys,
+      inscriptionItemKeys: insKeys,
+      enhanceLevel: Number(item.EnhanceLevel ?? item.enhanceLevel ?? 0),
+      inherentOptionValues: inherentVals,
+    });
   }
 
   // パーティ3体のヒーローを取得
   const heroes: HeroData[] = arrangedHeroKey.slice(0, 3).map((heroKey, idx) => {
     const heroSave = heroSaveDatas.find((h) => Number(h.heroKey) === heroKey) ?? {};
     const equippedItemIds = (heroSave.equippedItemIds as number[] | undefined) ?? [];
-    // UniqueIdからItemKeyに変換
-    const equippedItemKeys = equippedItemIds.map((uid) =>
-      uid > 0 ? (uniqueIdToItemKey.get(String(uid)) ?? 0) : 0
-    );
-    return buildHeroData({ ...heroSave, heroKey }, idx, equippedItemKeys);
+
+    const equippedItemKeys: number[] = [];
+    const equippedItemsDetail: ItemSlotData[] = [];
+
+    for (const uid of equippedItemIds) {
+      if (uid > 0) {
+        const detail = uniqueIdToItemData.get(String(uid));
+        equippedItemKeys.push(detail?.itemKey ?? 0);
+        equippedItemsDetail.push(detail ?? {
+          uniqueId: String(uid),
+          itemKey: 0,
+          decorationItemKeys: [],
+          engravingItemKeys: [],
+          inscriptionItemKeys: [],
+          enhanceLevel: 0,
+          inherentOptionValues: [],
+        });
+      } else {
+        equippedItemKeys.push(0);
+        equippedItemsDetail.push({
+          uniqueId: '0',
+          itemKey: 0,
+          decorationItemKeys: [],
+          engravingItemKeys: [],
+          inscriptionItemKeys: [],
+          enhanceLevel: 0,
+          inherentOptionValues: [],
+        });
+      }
+    }
+
+    return buildHeroData({ ...heroSave, heroKey }, idx, equippedItemKeys, equippedItemsDetail);
   });
 
   return {

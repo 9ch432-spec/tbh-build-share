@@ -66,7 +66,7 @@ export default function Navbar() {
           </Link>
 
           {/* バージョン */}
-          <span className="text-xs text-gray-600 font-mono hidden sm:inline">v1.00.1</span>
+          <span className="text-xs text-gray-600 font-mono hidden sm:inline">v1.01.0</span>
 
           {/* 言語切り替え */}
           <div className="relative">
